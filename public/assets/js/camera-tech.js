@@ -122,29 +122,22 @@ function init() {
     alert("Diagnostics started (mock)");
   });
 
-  // Status override controls
-  const $sel = document.querySelector('#statusSelect');
-  const currentOverride = loadStatusOverrides()[rname] || '';
-  $sel.value = currentOverride;
-  document.querySelector('#btnApplyStatus').addEventListener('click', ()=>{
-    const v = $sel.value;
-    saveStatusOverride(rname, v);
-    // Reflect immediately in UI status badge
-    const newStatus = v || d.status;
-    $status.textContent = newStatus;
-    $status.classList.remove("status-online","status-degraded","status-offline");
-    if (newStatus === "online") $status.classList.add("status-online");
-    else if (newStatus === "degraded") $status.classList.add("status-degraded");
-    else $status.classList.add("status-offline");
-    // Update Delete button availability: only when offline
-    const $del = document.querySelector('#btnDeleteCam');
-    if (newStatus === 'offline') {
-      $del.disabled = false;
-      $del.title = '';
-    } else {
-      $del.disabled = true;
-      $del.title = 'Camera must be offline to delete';
-    }
+  // Inline status picker
+  document.querySelectorAll('#statusInline [data-status]').forEach(btn => {
+    btn.addEventListener('click', ()=>{
+      const v = btn.getAttribute('data-status');
+      saveStatusOverride(rname, v);
+      // Reflect immediately in UI
+      $status.textContent = v;
+      $status.classList.remove("status-online","status-degraded","status-offline");
+      if (v === "online") $status.classList.add("status-online");
+      else if (v === "degraded") $status.classList.add("status-degraded");
+      else $status.classList.add("status-offline");
+      // Update Delete button availability
+      const $del = document.querySelector('#btnDeleteCam');
+      if (v === 'offline') { $del.disabled = false; $del.title = ''; }
+      else { $del.disabled = true; $del.title = 'Camera must be offline to delete'; }
+    });
   });
 
   // Delete camera (only when offline). Base cams are soft-deleted via localStorage so they disappear across the app.

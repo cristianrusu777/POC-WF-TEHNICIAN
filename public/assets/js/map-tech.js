@@ -86,7 +86,7 @@ function saveCustomCams(list){
 function addCustomCam({name, lat, lng}){
   const customs = loadCustomCams();
   if (customs.find(c=>c.name===name)) return { ok:false, msg:'Name already exists' };
-  customs.push({name, lat, lng});
+  customs.push({name, lat, lng, createdAt: Date.now()});
   saveCustomCams(customs);
   // Add to runtime
   const c = makeTechCamera({ name, lat: Number(lat), lng: Number(lng) });
@@ -184,7 +184,7 @@ function renderAdminTable(){
   const deleted = loadDeletedCams();
   let all = [
     ...DataFetcher.cameras.map(c=>({ name:c.name, lat:c.lat, lng:c.lng, custom:false })),
-    ...customs.map(c=>({ name:c.name, lat:Number(c.lat), lng:Number(c.lng), custom:true }))
+    ...customs.map(c=>({ name:c.name, lat:Number(c.lat), lng:Number(c.lng), custom:true, createdAt: Number(c.createdAt||0) }))
   ];
   // Exclude deleted
   all = all.filter(x=> !deleted.has(x.name));
@@ -192,6 +192,7 @@ function renderAdminTable(){
   all.sort((a,b)=>{
     if (a.custom && !b.custom) return -1;
     if (!a.custom && b.custom) return 1;
+    if (a.custom && b.custom) return (Number(b.createdAt||0) - Number(a.createdAt||0));
     return a.name.localeCompare(b.name);
   });
   if (all.length === 0){
@@ -530,6 +531,13 @@ function filteredCameras() {
     const aCust = !!a.custom, bCust = !!b.custom;
     if (aCust && !bCust) return -1;
     if (!aCust && bCust) return 1;
+    if (aCust && bCust) {
+      // When both custom, newest first using createdAt from localStorage
+      const createdMap = Object.fromEntries((loadCustomCams()||[]).map(c=>[c.name, Number(c.createdAt||0)]));
+      const ac = createdMap[a.name] || 0;
+      const bc = createdMap[b.name] || 0;
+      if (bc !== ac) return bc - ac;
+    }
     // Keep bookmarked priority next
     const aBook = bookmarked.has(a.name);
     const bBook = bookmarked.has(b.name);
