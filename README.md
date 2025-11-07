@@ -1,2 +1,2 @@
 Login: T-12345
-Passowrd: test123
+Password: test123
