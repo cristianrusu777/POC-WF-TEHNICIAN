@@ -4,8 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="82b24e4d-94d9-476c-98fe-dd50323e791b" name="Changes" comment="adjusts column widths for better alignment and improve text overflow handling.">
+    <list default="true" id="82b24e4d-94d9-476c-98fe-dd50323e791b" name="Changes" comment="Fixes unclosed `div` in data-tech.html and updates column width and text overflow handling in workspace configuration.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/camera-tech.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/camera-tech.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/data-tech.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/data-tech.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/map-tech.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/map-tech.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +33,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/cristianrusu777/POC-WF-TEHNICIAN.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/cristianrusu777/POC-WF-Technician.git&quot;,
     &quot;accountId&quot;: &quot;68112201-5b2c-4f46-8e9a-4ac0c3410339&quot;
   }
 }</component>
@@ -113,15 +116,8 @@
       <workItem from="1762436165131" duration="5840000" />
       <workItem from="1762445082707" duration="12012000" />
       <workItem from="1762495827218" duration="3333000" />
-      <workItem from="1762502051668" duration="10133000" />
-    </task>
-    <task id="LOCAL-00017" summary="Final: working subscription page">
-      <option name="closed" value="true" />
-      <created>1761567928795</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1761567928795</updated>
+      <workItem from="1762502051668" duration="11197000" />
+      <workItem from="1762539984671" duration="995000" />
     </task>
     <task id="LOCAL-00018" summary="Final: working subscription page (improved)">
       <option name="closed" value="true" />
@@ -507,7 +503,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762511478673</updated>
     </task>
-    <option name="localTasksCounter" value="66" />
+    <task id="LOCAL-00066" summary="Fixes unclosed `div` in data-tech.html and updates column width and text overflow handling in workspace configuration.">
+      <option name="closed" value="true" />
+      <created>1762512768647</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1762512768647</updated>
+    </task>
+    <option name="localTasksCounter" value="67" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -525,7 +529,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Feat(data): Add data table sorting functionality with UI enhancements" />
     <MESSAGE value="Adds sortable columns and enhance video UI with overlay badges" />
     <MESSAGE value="Improves modal behavior, UI consistency, and grid logic for camera wall" />
     <MESSAGE value="Adds camera management modal" />
@@ -550,6 +553,7 @@
     <MESSAGE value="adds advanced gray palette, enhance tab interactions, refine form controls, and improve list group and table styling." />
     <MESSAGE value="Improve data table UI: remove header corner rounding, center tabs, refine button padding, and auto-generate default selections on load" />
     <MESSAGE value="adjusts column widths for better alignment and improve text overflow handling." />
-    <option name="LAST_COMMIT_MESSAGE" value="adjusts column widths for better alignment and improve text overflow handling." />
+    <MESSAGE value="Fixes unclosed `div` in data-tech.html and updates column width and text overflow handling in workspace configuration." />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixes unclosed `div` in data-tech.html and updates column width and text overflow handling in workspace configuration." />
   </component>
 </project>

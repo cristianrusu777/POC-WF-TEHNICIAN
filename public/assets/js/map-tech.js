@@ -840,6 +840,23 @@ function bindUI(){
     // Admin search & status filter binding
     document.querySelector('#adminCamSearch')?.addEventListener('input', renderAdminTable);
     document.querySelector('#adminStatusFilter')?.addEventListener('change', renderAdminTable);
+
+    // Handle redirect from install page with a pending device
+    try {
+      const pending = localStorage.getItem('pendingAssignDevice');
+      if (pending) {
+        localStorage.removeItem('pendingAssignDevice');
+        const payload = JSON.parse(pending);
+        const lat = Number(payload?.lat), lng = Number(payload?.lng);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) {
+          setPendingDevice(lat, lng);
+          renderAdminTable();
+          renderUnassignedList();
+          adminModal.show();
+          setTimeout(()=> document.querySelector('#admName')?.focus(), 100);
+        }
+      }
+    } catch {}
   }
 }
 

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>WDS • Technician Install</title>
+  
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/css/reset.css">
+  <link rel="stylesheet" href="assets/css/styles.css">
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="assets/js/install-tech.js" type="module"></script>
+</head>
+<body>
+<header>
+  <nav class="navbar navbar-expand">
+    <div class="container-fluid">
+      <span class="navbar-brand">Wildlife Detection System</span>
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" href="./map-tech.html">Tech Map</a></li>
+        <li class="nav-item"><a class="nav-link" href="./data-tech.html">Tech Data</a></li>
+        <li class="nav-item"><a class="nav-link" href="./camera-tech.html">Tech Camera</a></li>
+        <li class="nav-item"><a class="nav-link active" href="./install-tech.html">Tech Install</a></li>
+      </ul>
+      <span class="role-badge me-2">Technician</span>
+      <a id="logout" class="btn" href="./authentication.html">Logout</a>
+    </div>
+  </nav>
+</header>
+
+<main class="container-fluid">
+  <div class="row" style="height:80vh; gap:1rem; margin:0 0.25rem;">
+    <div class="card col" style="padding:0;">
+      <div class="p-3">
+        <h5 class="fw-bold mb-2">Install New Physical Device</h5>
+        <div class="text-muted small mb-2">Select a location on the map or enter coordinates, then click <strong>Add device</strong>. Later, assign a camera to this device from the tech map (grey marker) via <em>Assign camera here</em>.</div>
+        <div class="row g-2 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">Latitude</label>
+            <input id="lat" type="number" class="form-control" step="0.000001" placeholder="Click on map or type"/>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Longitude</label>
+            <input id="lng" type="number" class="form-control" step="0.000001" placeholder="Click on map or type"/>
+          </div>
+          <div class="col-md-4 d-grid">
+            <button id="addBtn" class="btn-tech" disabled>Add device</button>
+          </div>
+        </div>
+      </div>
+      <div id="installMap" style="height:100%; min-height:48vh; border-radius: var(--radius);"></div>
+    </div>
+
+    <div class="card col-md-4" style="padding:0;">
+      <div class="p-3">
+        <h5 class="fw-bold mb-2">Unassigned Devices</h5>
+        <div id="count" class="small text-muted mb-2"></div>
+        <div id="devList" class="list-group small" style="max-height:62vh; overflow:auto;"></div>
+        <div class="mt-3 d-grid">
+          <a href="./map-tech.html" class="btn-tech">Open Tech Map</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="text-center">
+  <small>&copy; 2025 Wildlife Detection System - All Rights Reserved</small>
+</footer>
+</body>
+</html>
