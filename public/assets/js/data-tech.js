@@ -230,6 +230,12 @@ function compareValues(a, b, key){
   if (key === 'dateTime') {
     return new Date(a.dateTime) - new Date(b.dateTime);
   }
+  if (key === 'status') {
+    const order = { online: 0, degraded: 1, offline: 2 };
+    const av = order[String(a.status)||''] ?? 99;
+    const bv = order[String(b.status)||''] ?? 99;
+    return av - bv;
+  }
   if (['bitrate','temp','storage','uptime'].includes(key)) {
     return (Number(a[key]) || 0) - (Number(b[key]) || 0);
   }
@@ -268,14 +274,7 @@ function setupSorting(){
 
 function init(){
   populateCameraSelect();
-  // Preselect last viewed camera if present
-  try {
-    const saved = localStorage.getItem('rname');
-    const sel = document.querySelector('#t_cameraSelect');
-    if (saved && sel && Array.from(sel.options).some(o=>o.value===saved)) {
-      sel.value = saved;
-    }
-  } catch {}
+  // Default remains "All cameras"; do not override with last viewed camera
   document.querySelector("#t_generateBtn").addEventListener("click", ()=>{
     const regionVal = getSelected("t_regionSelect");
     const regions = regionVal ? [regionVal] : []; // empty means all
