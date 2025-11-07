@@ -543,52 +543,6 @@ tbody {
     margin-top: 10%;
 }
 
-/* Technician action buttons (restart/update/diagnose) */
-.btn-tech {
-    color: var(--gray-100);
-    background-color: var(--green-300);
-    border: none;
-    border-radius: var(--radius);
-}
-.btn-tech:hover {
-    background-color: var(--green-400);
-}
-
-/* Manage Cameras (Admin) modal: secondary and danger variants aligned to theme */
-.btn-secondary-tech {
-    color: var(--gray-900);
-    background-color: var(--green-200);
-    border: none;
-    border-radius: var(--radius);
-}
-.btn-secondary-tech:hover {
-    background-color: var(--green-300);
-}
-
-.btn-danger-tech {
-    color: #7f1d1d;
-    background-color: #fecaca; /* red-200 */
-    border: none;
-    border-radius: var(--radius);
-}
-.btn-danger-tech:hover {
-    background-color: #fca5a5; /* red-300 */
-}
-
-/* Status select colors inside Manage Cameras */
-.status-select-tech {
-    min-width: 9rem;
-}
-.status-online-select { background: #d1fae5 !important; color: #065f46 !important; }
-.status-degraded-select { background: #fef3c7 !important; color: #92400e !important; }
-.status-offline-select { background: #fee2e2 !important; color: #991b1b !important; }
-
-/* Technician UI: metric severity styles */
-.metric { font-weight: 600; padding: 0.05rem 0.35rem; border-radius: 0.35rem; font-size: 0.85rem; }
-.metric-ok { background: #e6fffa; color: #065f46; }
-.metric-warn { background: #fef3c7; color: #92400e; }
-.metric-crit { background: #fee2e2; color: #991b1b; }
-
 /* Explicit styles for small action buttons (view/bookmark) */
 .vbutton {
     display: inline-block;
@@ -600,12 +554,84 @@ tbody {
     border-radius: var(--radius);
     cursor: pointer;
 }
+.vbutton:hover { background-color: var(--green-400); }
 
-.vbutton.bookmarked { background-color: var(--accent-gold-300); color: var(--gray-900); }
-.action-row .vbutton.bookmarked:hover { background-color: var(--accent-gold-400); color: var(--gray-900); }
+/* Ensure Leaflet popup buttons keep padding/style */
+.leaflet-popup-content .vbutton {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius);
+}
 
-/* Increase specificity so hover applies inside list groups and Leaflet popups */
-.action-row .vbutton { background-color: var(--green-200); color: var(--gray-900); }
-.action-row .vbutton:hover { background-color: var(--accent-gold-300); color: var(--gray-900); }
-.action-row .vbutton.bookmarked { background-color: var(--accent-gold-300); color: var(--gray-900); }
-.action-row .vbutton.bookmarked:hover { background-color: var(--accent-gold-400); color: var(--gray-900); }
+/* Base tech buttons (used across Manage, Camera Wall, Apply, Restart) */
+.btn-tech {
+  color: var(--gray-100);
+  background-color: var(--green-300);
+  border: none;
+  border-radius: var(--radius);
+}
+.btn-tech:hover { background-color: var(--green-400); }
+
+/* Secondary tech button */
+.btn-secondary-tech {
+  color: var(--gray-900);
+  background-color: var(--green-200);
+  border: none;
+  border-radius: var(--radius);
+}
+.btn-secondary-tech:hover { background-color: var(--green-300); }
+
+#adminCamsModal input.auto-fill[readonly]::placeholder {
+  color: #cbd5e1;            /* slate-300 */
+}
+
+.btn-danger-tech {
+    color: #7f1d1d;
+    background-color: #fecaca; /* red-200 */
+    border: none;
+    border-radius: var(--radius);
+}
+#adminCamsModal #admAddBtn:disabled {
+  background-color: #e5e7eb; /* gray-200 */
+  color: #6b7280;            /* gray-500 */
+  cursor: not-allowed;
+  border: none;
+}
+
+/* Unassigned devices list: show ~3 items with scrollbar */
+.unassigned-wrap #unassignedList {
+  max-height: 10.5rem; /* ~3 items */
+  overflow: auto;
+}
+.unassigned-wrap #unassignedList .list-group-item.selected {
+  background: #f0fdf4; /* subtle highlight */
+  border-left: 3px solid var(--green-300);
+}
+.btn-danger-tech:hover {
+    background-color: #fca5a5; /* red-300 */
+}
+
+/* Small button utility for compact lists (e.g., unassigned devices Focus/Select) */
+.btn-xs {
+  padding: 0.125rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  border-radius: 0.35rem;
+}
+
+/* Make tech-themed buttons look good inside Leaflet popups */
+.leaflet-popup-content .btn-tech,
+.leaflet-popup-content .btn-secondary-tech {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.9rem;
+  border-radius: var(--radius);
+}
+.status-select-tech {
+    min-width: 9rem;
+}
+.status-online-select { background: #d1fae5 !important; color: #065f46 !important; }
+.status-degraded-select { background: #fef3c7 !important; color: #92400e !important; }
+.status-offline-select { background: #fee2e2 !important; color: #991b1b !important; }
+
+/* Technician UI: metric severity styles */

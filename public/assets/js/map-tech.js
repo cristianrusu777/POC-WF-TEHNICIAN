@@ -435,7 +435,7 @@ function createDeviceMarker(dev){
         <strong>Unassigned device</strong><br>
         <small>${regionFromLatLng(dev.lat, dev.lng)}</small>
         <div class="action-row" style="margin-top:0.5rem;">
-          <button class="vbutton" onclick="assignFromDevice(${dev.lat}, ${dev.lng})">Assign camera here</button>
+          <button class="btn-tech" onclick="assignFromDevice(${dev.lat}, ${dev.lng})">Assign camera here</button>
         </div>
       </div>
     `);
@@ -483,6 +483,8 @@ function updateAddBtnState(){
   const hasDev = !!window.__pendingDevice;
   // Enable Add as soon as a device is selected; name is still validated on submit
   btn.disabled = !hasDev;
+  btn.textContent = hasDev ? 'Add' : 'Add (select device)';
+  btn.title = hasDev ? '' : 'Select an unassigned device from the list or map';
 }
 
 // Open Manage Cameras modal with coords prefilled
