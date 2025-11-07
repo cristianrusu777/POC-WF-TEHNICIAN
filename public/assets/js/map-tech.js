@@ -223,6 +223,18 @@ function initializeMap() {
   });
 
   // Finally, render any unassigned device markers
+  // Seed mock devices once if none exist
+  if ((loadDevices()||[]).length === 0) {
+    const seeds = [
+      { lat: 51.500, lng: -0.120 },   // near London
+      { lat: 40.4168, lng: -3.7038 }, // Madrid
+      { lat: -33.865, lng: 151.209 }, // Sydney
+      { lat: 37.7749, lng: -122.4194 } // San Francisco
+    ];
+    const unique = [];
+    seeds.forEach(s=> unique.push({ lat: Number(s.lat), lng: Number(s.lng) }));
+    saveDevices(unique);
+  }
   refreshDeviceMarkers();
 }
 
@@ -247,8 +259,7 @@ function renderAdminTable(){
   if (adminSort.key) {
     const { key, dir } = adminSort;
     all.sort((a,b)=>{
-      let va, vb;
-      if (key === 'type') { va = a.custom?1:0; vb = b.custom?1:0; } else { va = a[key]; vb = b[key]; }
+      let va = a[key]; let vb = b[key];
       if (typeof va === 'string') { const r = va.localeCompare(String(vb)); return dir==='asc'? r : -r; }
       const diff = (Number(va)||0) - (Number(vb)||0);
       return dir==='asc' ? diff : -diff;
@@ -276,7 +287,6 @@ function renderAdminTable(){
       <td>${c.name}</td>
       <td>${c.lat}</td>
       <td>${c.lng}</td>
-      <td>${c.custom ? 'Custom' : 'Base'}</td>
       <td>
         <div class="d-flex align-items-center gap-1 flex-wrap">
           <select class="form-select form-select-sm status-select-tech" data-role="status">
@@ -345,6 +355,39 @@ function renderAdminTable(){
     });
     body.appendChild(tr);
   });
+
+  // Append unassigned devices after cameras
+  const __devices = (loadDevices()||[]);
+  __devices.forEach(dev=>{
+    const dtr = document.createElement('tr');
+    dtr.innerHTML = `
+      <td><em>Unassigned device</em></td>
+      <td>${dev.lat}</td>
+      <td>${dev.lng}</td>
+      <td>
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+          <button class="btn btn-sm btn-tech" data-act="assign">Assign</button>
+          <button class="btn btn-sm btn-secondary-tech" data-act="focus">Focus</button>
+        </div>
+      </td>`;
+    dtr.querySelector('[data-act="assign"]').addEventListener('click', ()=>{
+      // Prefill coords, set pending, open modal; submission will perform assignment
+      const latEl = document.querySelector('#admLat');
+      const lngEl = document.querySelector('#admLng');
+      if (latEl) latEl.value = Number(dev.lat).toFixed(6);
+      if (lngEl) lngEl.value = Number(dev.lng).toFixed(6);
+      window.__pendingDevice = { lat: dev.lat, lng: dev.lng };
+      const modalEl = document.getElementById('adminCamsModal');
+      try { bootstrap.Modal.getOrCreateInstance(modalEl).show(); } catch {}
+      setTimeout(()=> document.querySelector('#admName')?.focus(), 100);
+    });
+    dtr.querySelector('[data-act="focus"]').addEventListener('click', ()=>{
+      try { bootstrap.Modal.getOrCreateInstance(document.getElementById('adminCamsModal')).hide(); } catch {}
+      setTimeout(()=>{ window.techMap.setView([dev.lat, dev.lng], 8); }, 150);
+    });
+    body.appendChild(dtr);
+  });
+
   // Hook up sortable headers
   const thead = body.closest('table')?.querySelector('thead');
   thead?.querySelectorAll('th[data-key]')?.forEach(th=>{
@@ -405,9 +448,12 @@ function refreshDeviceMarkers(){
 
 // Open Manage Cameras modal with coords prefilled
 window.assignFromDevice = function(lat, lng){
+  // Always prefill coords (readonly), set pending, and open the modal; user clicks Add to complete
   const latEl = document.querySelector('#admLat');
   const lngEl = document.querySelector('#admLng');
-  if (latEl && lngEl){ latEl.value = Number(lat).toFixed(6); lngEl.value = Number(lng).toFixed(6); }
+  if (latEl) latEl.value = Number(lat).toFixed(6);
+  if (lngEl) lngEl.value = Number(lng).toFixed(6);
+  window.__pendingDevice = { lat, lng };
   const modalEl = document.querySelector('#adminCamsModal');
   if (modalEl){ try { bootstrap.Modal.getOrCreateInstance(modalEl).show(); } catch {} }
   setTimeout(()=> document.querySelector('#admName')?.focus(), 100);
@@ -551,24 +597,31 @@ function bindUI(){
     const form = document.querySelector('#adminCamForm');
     form?.addEventListener('submit', (e)=>{
       e.preventDefault();
-      const name = document.querySelector('#admName').value.trim();
-      const lat = parseFloat(document.querySelector('#admLat').value);
-      const lng = parseFloat(document.querySelector('#admLng').value);
-      if (!name || Number.isNaN(lat) || Number.isNaN(lng)) return;
-      // Enforce that a physical device exists at these coordinates
-      if (!hasDeviceAt(lat, lng)){
-        alert('Select a grey unassigned device on the map to add a camera.');
+      const name = document.querySelector('#admName')?.value.trim();
+      if (!name){
+        alert('Enter a camera name first.');
+        document.querySelector('#admName')?.focus();
         return;
       }
+      if (!window.__pendingDevice){
+        alert('Click a grey device (map or list) to select placement.');
+        return;
+      }
+      const { lat, lng } = window.__pendingDevice;
       const res = addCustomCam({ name, lat, lng });
       if (res.ok){
+        window.__pendingDevice = null;
         form.reset();
-        // Consume the device and refresh grey markers
+        // clear readonly fields
+        const latEl = document.querySelector('#admLat');
+        const lngEl = document.querySelector('#admLng');
+        if (latEl) latEl.value = '';
+        if (lngEl) lngEl.value = '';
         removeDeviceByCoords(lat, lng);
         refreshDeviceMarkers();
         renderAdminTable();
       } else {
-        alert(res.msg || 'Unable to add camera');
+        alert(res.msg || 'Unable to assign camera');
       }
     });
     // Admin search binding
