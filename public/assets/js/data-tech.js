@@ -121,21 +121,22 @@ function getAllCameras() {
 function populateCameraSelect() {
   const sel = document.querySelector('#t_cameraSelect');
   if (!sel) return;
-  const prevSelected = new Set(Array.from(sel.selectedOptions).map(o=>o.value));
-  // clear all options
+  const prev = sel.value || '';
+  // clear and add "All cameras"
   sel.innerHTML = '';
+  const allOpt = document.createElement('option');
+  allOpt.value = '';
+  allOpt.textContent = 'All cameras';
+  sel.appendChild(allOpt);
+  // add cameras
   getAllCameras().forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.name;
     opt.textContent = c.name;
-    // default select all
-    opt.selected = true;
     sel.appendChild(opt);
   });
-  // re-apply previous selection if existed
-  if (prevSelected.size>0) {
-    Array.from(sel.options).forEach(o=>{ if (prevSelected.has(o.value)) o.selected = true; });
-  }
+  // restore previous value if still present
+  if (Array.from(sel.options).some(o=>o.value===prev)) sel.value = prev; else sel.value = '';
 }
 
 function renderChartForCamera(data, cameraName){
@@ -216,19 +217,12 @@ function renderChartForCamera(data, cameraName){
 }
 
 function getSelected(id){
-  return Array.from(document.querySelector(`#${id}`).selectedOptions).map(o=>o.value);
-}
-
-function getMultiSelected(id){
+  // For single-select dropdowns, return the value (string).
+  // For multi-select (status), return array of selected values.
   const el = document.querySelector(`#${id}`);
-  if (!el) return [];
-  const vals = Array.from(el.selectedOptions).map(o=>o.value);
-  if (vals.length === 0) {
-    // default to all options
-    Array.from(el.options).forEach(o=> o.selected = true);
-    return Array.from(el.options).map(o=>o.value);
-  }
-  return vals;
+  if (!el) return '';
+  if (el.multiple) return Array.from(el.selectedOptions).map(o=>o.value);
+  return el.value || '';
 }
 
 function compareValues(a, b, key){
@@ -279,18 +273,18 @@ function init(){
     const saved = localStorage.getItem('rname');
     const sel = document.querySelector('#t_cameraSelect');
     if (saved && sel && Array.from(sel.options).some(o=>o.value===saved)) {
-      // keep all selected by default but ensure saved is selected (it will be already)
-      Array.from(sel.options).forEach(o=>{ if (o.value===saved) o.selected = true; });
+      sel.value = saved;
     }
   } catch {}
   document.querySelector("#t_generateBtn").addEventListener("click", ()=>{
-    const regions = getSelected("t_regionSelect");
+    const regionVal = getSelected("t_regionSelect");
+    const regions = regionVal ? [regionVal] : []; // empty means all
     let status = getSelected("t_statusSelect");
-    if (status.includes('all')) status = [];
-    const selectedCameras = getMultiSelected('t_cameraSelect');
+    if (Array.isArray(status) && status.includes('all')) status = [];
+    const cameraVal = document.querySelector('#t_cameraSelect')?.value || '';
     const from = document.querySelector("#t_fromDate").value;
     const to = document.querySelector("#t_toDate").value;
-    const data = generateData(regions, status, from, to, selectedCameras);
+    const data = generateData(regions, status, from, to, cameraVal ? [cameraVal] : []);
     const criticalFirst = document.querySelector('#t_criticalFirst')?.checked;
     if (criticalFirst) {
       const sev = (r) => {
@@ -307,8 +301,7 @@ function init(){
     // Reset sort on new data (default by date asc already)
     sortState = { key: null, dir: 'asc' };
     renderTable(currentData);
-    const selected = getMultiSelected('t_cameraSelect');
-    let cam = selected[0] || '';
+    let cam = cameraVal || '';
     if (!cam) {
       const uniq = Array.from(new Set(currentData.map(r=>r.camera)));
       if (uniq.length === 1) { cam = uniq[0]; }
@@ -317,9 +310,7 @@ function init(){
   });
   // Re-render chart when camera selection changes
   document.querySelector('#t_cameraSelect')?.addEventListener('change', (e)=>{
-    const sel = e.target;
-    const vals = Array.from(sel.selectedOptions).map(o=>o.value);
-    const cam = vals[0] || '';
+    const cam = e.target.value || '';
     renderChartForCamera(currentData, cam);
   });
   setupSorting();
