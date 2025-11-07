@@ -36,83 +36,87 @@
 <main class="container-fluid fd">
     <div class="row frow">
         <div class="col-md-3 fcol">
-            <div class="card fcard">
-                <div class="card-body fcbody">
-                    <h3 class="text-center fw-bold">Tech Filter</h3>
-                    <div>
-                        <h5>Region</h5>
-                        <select id="t_regionSelect" class="form-select" multiple>
-                            <option value="North America">North America</option>
-                            <option value="South America">South America</option>
-                            <option value="Europe">Europe</option>
-                            <option value="Africa">Africa</option>
-                            <option value="Asia">Asia</option>
-                            <option value="Oceania">Oceania</option>
-                            <option value="Antarctica & Misc">Antarctica & Misc</option>
-                        </select>
-                    </div>
-                    <div>
-                        <h5>Status</h5>
-                        <select id="t_statusSelect" class="form-select" multiple>
-                            <option value="all" selected>All statuses</option>
-                            <option value="online">Online</option>
-                            <option value="degraded">Degraded</option>
-                            <option value="offline">Offline</option>
-                        </select>
-                    </div>
-                    <div>
-                        <h5>Period</h5>
-                        <label class="form-label">From</label>
-                        <input type="datetime-local" id="t_fromDate" class="form-control">
-                        <label class="form-label">To</label>
-                        <input type="datetime-local" id="t_toDate" class="form-control">
-                    </div>
-                    <button id="t_generateBtn" class="btn-tech w-100">Generate</button>
-                </div>
+          <div class="card fcard">
+            <div class="card-body fcbody">
+              <h3 class="text-center fw-bold">Tech Filter</h3>
+              <div>
+                <h5>Region</h5>
+                <select id="t_regionSelect" class="form-select" multiple>
+                  <option value="North America">North America</option>
+                  <option value="South America">South America</option>
+                  <option value="Europe">Europe</option>
+                  <option value="Africa">Africa</option>
+                  <option value="Asia">Asia</option>
+                  <option value="Oceania">Oceania</option>
+                  <option value="Antarctica & Misc">Antarctica & Misc</option>
+                </select>
+              </div>
+              <div>
+                <h5>Camera</h5>
+                <select id="t_cameraSelect" class="form-select" multiple size="6"></select>
+                <small class="text-muted">Graphs use the first selected camera when multiple are selected.</small>
+              </div>
+              <div>
+                <h5>Status</h5>
+                <select id="t_statusSelect" class="form-select" multiple>
+                  <option value="all" selected>All statuses</option>
+                  <option value="online">Online</option>
+                  <option value="degraded">Degraded</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+              <div>
+                <h5>Period</h5>
+                <label class="form-label">From</label>
+                <input type="datetime-local" id="t_fromDate" class="form-control">
+                <label class="form-label">To</label>
+                <input type="datetime-local" id="t_toDate" class="form-control">
+              </div>
+              <button id="t_generateBtn" class="btn-tech w-100">Generate</button>
             </div>
+          </div>
         </div>
         <div class="card col dcol">
-            <ul class="nav nav-tabs" id="dataTabs">
-                <li class="nav-item">
-                    <button class="nav-link active" id="t_dataTabBtn" data-bs-toggle="tab" data-bs-target="#t_dataTab">Data</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link" id="t_graphTabBtn" data-bs-toggle="tab" data-bs-target="#t_graphTab">Graphs</button>
-                </li>
-            </ul>
-            <div class="tab-content">
-                <div class="tab-pane fade show active" id="t_dataTab">
-                    <table class="table table-striped" id="t_dataTable">
-                        <thead class="table-dark">
-                        <tr>
-                            <th data-key="dateTime">Date & Time</th>
-                            <th data-key="camera">Camera</th>
-                            <th data-key="region">Region</th>
-                            <th data-key="status">Status</th>
-                            <th data-key="bitrate">Bitrate (Mbps)</th>
-                            <th data-key="temp">Temp (°C)</th>
-                            <th data-key="storage">Storage (%)</th>
-                            <th data-key="uptime">Uptime (h)</th>
-                            <th data-key="ip">IP</th>
-                            <th>Video</th>
-                        </tr>
-                        </thead>
-                        <tbody id="t_dataBody">
-                        <tr>
-                            <td colspan="10" class="text-center text-muted">Use filters on the left and click Generate to view technician data.</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="tab-pane fade" id="t_graphTab">
-                    <div class="card-body">
-                        <h5 class="card-title text-center">Bitrate & Temperature Over Time</h5>
-                        <canvas id="t_chart"></canvas>
-                    </div>
-                </div>
+          <ul class="nav nav-tabs" id="dataTabs">
+            <li class="nav-item">
+              <button class="nav-link active" id="t_dataTabBtn" data-bs-toggle="tab" data-bs-target="#t_dataTab">Data</button>
+            </li>
+            <li class="nav-item">
+              <button class="nav-link" id="t_graphTabBtn" data-bs-toggle="tab" data-bs-target="#t_graphTab">Graphs</button>
+            </li>
+          </ul>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="t_dataTab">
+              <table class="table table-striped" id="t_dataTable">
+                <thead class="table-dark">
+                  <tr>
+                    <th data-key="dateTime">Date & Time</th>
+                    <th data-key="camera">Camera</th>
+                    <th data-key="region">Region</th>
+                    <th data-key="status">Status</th>
+                    <th data-key="bitrate">Bitrate (Mbps)</th>
+                    <th data-key="temp">Temp (°C)</th>
+                    <th data-key="storage">Storage (%)</th>
+                    <th data-key="uptime">Uptime (h)</th>
+                    <th data-key="ip">IP</th>
+                    <th>Video</th>
+                  </tr>
+                </thead>
+                <tbody id="t_dataBody">
+                  <tr>
+                    <td colspan="10" class="text-center text-muted">Use filters on the left and click Generate to view technician data.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+            <div class="tab-pane fade" id="t_graphTab">
+              <div class="card-body chart-fixed">
+                <h5 class="card-title text-center" id="t_chartTitle">Bitrate & Temperature Over Time</h5>
+                <canvas id="t_chart"></canvas>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
 </main>
 
 <footer class="text-center">

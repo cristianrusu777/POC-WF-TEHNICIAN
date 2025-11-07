@@ -6,6 +6,24 @@ if (localStorage.getItem('role') !== 'technician') {
   window.location = './authentication.html';
 }
 
+function refreshAllUIs(){
+  try { renderList(); } catch {}
+  // Refresh Manage Cameras if open
+  if (document.getElementById('adminCamsModal')){
+    try { renderAdminTable(); renderUnassignedList(); } catch {}
+  }
+  // Refresh Camera Wall overlay if present
+  if (document.getElementById('wallGrid')){
+    const cols = Number(document.querySelector('#wallCols')?.value || 3);
+    const critical = !!document.querySelector('#wallCriticalFirst')?.checked;
+    try { renderWallGrid({ cols, critical }); } catch {}
+  }
+  // Refresh Camera Wall modal if present
+  if (document.getElementById('mwGrid')){
+    try { renderModalWallGrid(); } catch {}
+  }
+}
+
 function renameCamera(oldName, newName){
   newName = String(newName||'').trim();
   if (!newName) return { ok:false, msg:'Name cannot be empty' };
@@ -17,9 +35,10 @@ function renameCamera(oldName, newName){
   if (isCustom){ return renameCustomCam(oldName, newName); }
   // Base camera: persist override
   const ov = loadNameOverrides();
-  ov[oldName] = newName;
-  saveNameOverrides(ov);
   const cam = techCameras.find(c=>c.name===oldName && !c.custom);
+  const key = cam?.originalName || oldName;
+  ov[key] = newName;
+  saveNameOverrides(ov);
   if (!cam) return { ok:false, msg:'Camera not found' };
   cam.name = newName;
   // move status overrides
@@ -116,7 +135,9 @@ function makeTechCamera(c) {
   const firmware = randomChoice(["v1.9.2","v2.0.0","v2.1.3","v2.2.0-rc1"]);
   const ip = `10.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}.${Math.floor(Math.random()*256)}`;
   const region = regionFromLatLng(c.lat, c.lng);
-  return { ...c, region, status, bitrateMbps, temperatureC, storageUsed, uptimeHrs, lastHeartbeatMin, firmware, ip };
+  // Track the camera's original source name to support persistent overrides
+  const originalName = c.originalName || c.name;
+  return { ...c, originalName, region, status, bitrateMbps, temperatureC, storageUsed, uptimeHrs, lastHeartbeatMin, firmware, ip };
 }
 
 const techCameras = DataFetcher.cameras.map(makeTechCamera);
@@ -189,7 +210,7 @@ function addCustomCam({name, lat, lng}){
   if (window.techMap) createMarker(c);
   // Deduplicate just in case
   dedupeTechCameras();
-  renderList();
+  refreshAllUIs();
   return { ok:true };
 }
 function deleteCustomCam(name){
@@ -335,15 +356,19 @@ if (document.readyState === 'loading') {
 function init() {
   initializeMap();
   attachFilters();
-  // Apply base camera name overrides to runtime list
+  // Apply base camera name overrides to runtime list using originalName
   const nov = loadNameOverrides();
-  Object.entries(nov).forEach(([oldName, newName])=>{
-    const cam = techCameras.find(c=>c.name===oldName && !c.custom);
-    if (cam) cam.name = newName;
+  techCameras.forEach(cam=>{
+    if (!cam.custom){
+      const key = cam.originalName || cam.name;
+      if (Object.prototype.hasOwnProperty.call(nov, key)){
+        cam.name = nov[key];
+      }
+    }
   });
   // Dedupe any leftover duplicates by name (prefer custom entries)
   dedupeTechCameras();
-  renderList();
+  refreshAllUIs();
 }
 
 function initializeMap() {

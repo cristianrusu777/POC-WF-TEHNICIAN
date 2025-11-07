@@ -59,7 +59,7 @@ function getCustomCams(){
   try { return JSON.parse(localStorage.getItem('adminCustomCameras')||'[]'); } catch { return []; }
 }
 
-function generateData(selectedRegions, selectedStatus, from, to) {
+function generateData(selectedRegions, selectedStatus, from, to, cameraNames = []) {
   const start = from ? new Date(from) : new Date(Date.now() - 7*24*60*60*1000);
   const end = to ? new Date(to) : new Date();
   const rows = [];
@@ -67,7 +67,11 @@ function generateData(selectedRegions, selectedStatus, from, to) {
   const base = DataFetcher.cameras;
   const customs = getCustomCams().map(c=>({ name: c.name, lat: Number(c.lat), lng: Number(c.lng) }));
   const all = base.concat(customs);
-  const cams = all.filter(c => selectedRegions.length===0 || selectedRegions.includes(regionFromLatLng(c.lat,c.lng)));
+  const cams = all.filter(c => {
+    if (selectedRegions.length>0 && !selectedRegions.includes(regionFromLatLng(c.lat,c.lng))) return false;
+    if (cameraNames.length>0 && !cameraNames.includes(c.name)) return false;
+    return true;
+  });
   const entries = Math.min(300, cams.length * 15);
   for (let i=0;i<entries;i++) {
     const cam = randomChoice(cams);
@@ -102,29 +106,129 @@ function renderTable(data){
 let chart;
 let currentData = [];
 let sortState = { key: null, dir: 'asc' };
-function renderChart(data){
-  const ctx = document.querySelector("#t_chart").getContext("2d");
-  const labels = data.map(d=>d.dateTime.split(" ")[1]);
-  const bitrate = data.map(d=>d.bitrate);
-  const temp = data.map(d=>d.temp);
+
+function getAllCameras() {
+  const base = (DataFetcher.cameras || []).map(c => ({ name: c.name, lat: c.lat, lng: c.lng }));
+  let customs = [];
+  try { customs = (JSON.parse(localStorage.getItem('adminCustomCameras')||'[]')||[]).map(c=>({ name:c.name, lat:Number(c.lat), lng:Number(c.lng) })); } catch {}
+  // de-dupe by name (prefer custom)
+  const map = new Map();
+  base.forEach(c => { if (!map.has(c.name)) map.set(c.name, c); });
+  customs.forEach(c => { map.set(c.name, c); });
+  return Array.from(map.values()).sort((a,b)=> a.name.localeCompare(b.name));
+}
+
+function populateCameraSelect() {
+  const sel = document.querySelector('#t_cameraSelect');
+  if (!sel) return;
+  const prevSelected = new Set(Array.from(sel.selectedOptions).map(o=>o.value));
+  // clear all options
+  sel.innerHTML = '';
+  getAllCameras().forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = c.name;
+    // default select all
+    opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // re-apply previous selection if existed
+  if (prevSelected.size>0) {
+    Array.from(sel.options).forEach(o=>{ if (prevSelected.has(o.value)) o.selected = true; });
+  }
+}
+
+function renderChartForCamera(data, cameraName){
+  const title = document.querySelector('#t_chartTitle');
+  if (!cameraName) {
+    // No selection or no data: clear chart and show instruction
+    if (chart) { try { chart.destroy(); } catch {} chart = undefined; }
+    if (title) title.innerText = 'Select a camera to view graphs';
+    return;
+  }
+  const filtered = data.filter(d => d.camera === cameraName);
+  const ctx = document.querySelector("#t_chart")?.getContext("2d");
+  if (!ctx || filtered.length === 0){
+    if (chart) { try { chart.destroy(); } catch {} chart = undefined; }
+    if (title) title.innerText = `No data available for ${cameraName}`;
+    return;
+  }
+  const labels = filtered.map(d=>d.dateTime);
+  const bitrate = filtered.map(d=>d.bitrate);
+  const temp = filtered.map(d=>d.temp);
   if (chart) chart.destroy();
-  // Use Chart.js if available (included in HTML)
   // eslint-disable-next-line no-undef
   chart = new Chart(ctx, {
     type: 'line',
     data: {
       labels,
       datasets: [
-        { label: 'Bitrate (Mbps)', data: bitrate, borderColor: 'hsl(200, 70%, 45%)', tension: 0.3 },
-        { label: 'Temp (°C)', data: temp, borderColor: 'hsl(12, 70%, 45%)', tension: 0.3 }
+        {
+          label: 'Bitrate (Mbps)',
+          data: bitrate,
+          borderColor: 'hsl(200, 70%, 45%)',
+          backgroundColor: 'hsla(200, 70%, 45%, 0.15)',
+          yAxisID: 'y',
+          tension: 0.25,
+          pointRadius: 2,
+          fill: true
+        },
+        {
+          label: 'Temp (°C)',
+          data: temp,
+          borderColor: 'hsl(12, 70%, 45%)',
+          backgroundColor: 'hsla(12, 70%, 45%, 0.15)',
+          yAxisID: 'y1',
+          tension: 0.25,
+          pointRadius: 2,
+          fill: true
+        }
       ]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' }}}
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { title: (items)=> items?.[0]?.label || '' } }
+      },
+      scales: {
+        x: {
+          ticks: { maxTicksLimit: 8, color: '#475569' },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        },
+        y: {
+          title: { display: true, text: 'Bitrate (Mbps)' },
+          ticks: { color: '#475569' },
+          grid: { color: 'rgba(0,0,0,0.06)' }
+        },
+        y1: {
+          title: { display: true, text: 'Temp (°C)' },
+          position: 'right',
+          ticks: { color: '#475569' },
+          grid: { drawOnChartArea: false }
+        }
+      }
+    }
   });
+  if (title) title.innerText = `Bitrate & Temperature Over Time · ${cameraName}`;
 }
 
 function getSelected(id){
   return Array.from(document.querySelector(`#${id}`).selectedOptions).map(o=>o.value);
+}
+
+function getMultiSelected(id){
+  const el = document.querySelector(`#${id}`);
+  if (!el) return [];
+  const vals = Array.from(el.selectedOptions).map(o=>o.value);
+  if (vals.length === 0) {
+    // default to all options
+    Array.from(el.options).forEach(o=> o.selected = true);
+    return Array.from(el.options).map(o=>o.value);
+  }
+  return vals;
 }
 
 function compareValues(a, b, key){
@@ -162,19 +266,31 @@ function setupSorting(){
       }
       applySort();
       renderTable(currentData);
-      renderChart(currentData);
+      const cam = document.querySelector('#t_cameraSelect')?.value || '';
+      renderChartForCamera(currentData, cam);
     });
   });
 }
 
 function init(){
+  populateCameraSelect();
+  // Preselect last viewed camera if present
+  try {
+    const saved = localStorage.getItem('rname');
+    const sel = document.querySelector('#t_cameraSelect');
+    if (saved && sel && Array.from(sel.options).some(o=>o.value===saved)) {
+      // keep all selected by default but ensure saved is selected (it will be already)
+      Array.from(sel.options).forEach(o=>{ if (o.value===saved) o.selected = true; });
+    }
+  } catch {}
   document.querySelector("#t_generateBtn").addEventListener("click", ()=>{
     const regions = getSelected("t_regionSelect");
     let status = getSelected("t_statusSelect");
     if (status.includes('all')) status = [];
+    const selectedCameras = getMultiSelected('t_cameraSelect');
     const from = document.querySelector("#t_fromDate").value;
     const to = document.querySelector("#t_toDate").value;
-    const data = generateData(regions, status, from, to);
+    const data = generateData(regions, status, from, to, selectedCameras);
     const criticalFirst = document.querySelector('#t_criticalFirst')?.checked;
     if (criticalFirst) {
       const sev = (r) => {
@@ -191,7 +307,20 @@ function init(){
     // Reset sort on new data (default by date asc already)
     sortState = { key: null, dir: 'asc' };
     renderTable(currentData);
-    renderChart(currentData);
+    const selected = getMultiSelected('t_cameraSelect');
+    let cam = selected[0] || '';
+    if (!cam) {
+      const uniq = Array.from(new Set(currentData.map(r=>r.camera)));
+      if (uniq.length === 1) { cam = uniq[0]; }
+    }
+    renderChartForCamera(currentData, cam);
+  });
+  // Re-render chart when camera selection changes
+  document.querySelector('#t_cameraSelect')?.addEventListener('change', (e)=>{
+    const sel = e.target;
+    const vals = Array.from(sel.selectedOptions).map(o=>o.value);
+    const cam = vals[0] || '';
+    renderChartForCamera(currentData, cam);
   });
   setupSorting();
 }
